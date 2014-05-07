@@ -15,7 +15,7 @@ def Start():
     ObjectContainer.title1 = NAME
     HTTP.CacheTime = CACHE_1HOUR
     HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:23.0) Gecko/20100101 Firefox/23.0'
-##############################################################       
+##############################################################
 @handler('/video/pyvideos', NAME)
 def Main(offset=0):
     oc = ObjectContainer()
@@ -25,15 +25,15 @@ def Main(offset=0):
     #count=2
     for each_category in mycategories[offset:offset+10]:
         #Log(each_category)
-        oc.add(DirectoryObject(key=Callback(MainMenu,each_category=each_category),title=each_category))        
+        oc.add(DirectoryObject(key=Callback(MainMenu,each_category=each_category),title=each_category))
         #if offset < len(mycategories):
             #oc.add(NextPageObject(key=Callback(Main, offset=offset+2), title='Moree'))
         #Log('------------------')
     if offset < len(mycategories):
-        oc.add(NextPageObject(key=Callback(Main, offset=offset+10), title='Moree'))    
+        oc.add(NextPageObject(key=Callback(Main, offset=offset+10), title='Moree'))
         #oc.add(NextPageObject(key=Callback(MainMenu,each_category=each_category), title='More'))
     return oc
-   	
+
 ###############################################################
 @route('/video/pyvideos/videos', NAME)
 def MainMenu(each_category):
@@ -47,11 +47,11 @@ def MainMenu(each_category):
         test=URLTest(each_video_url)
         if test=='true':
             oc.add(VideoClipObject(url=each_video_url,title='youtube',summary = 'test'))
-        elif each_video_url.startswith('http'):            
+        elif each_video_url.startswith('http'):
             oc.add(CreateVideoClipObject(url=each_video_url,summary = 'test'))
         #Log(each_video_url)
         #Log('I was here')
-    return oc                   
+    return oc
 ###############################################################
 @route('/video/pyvideos/urltest')
 def URLTest(url):
@@ -61,8 +61,8 @@ def URLTest(url):
     url_good = 'false'
   return url_good
 
-###############################################################    
-@route('/video/pyvideos/createobject')                        
+###############################################################
+@route('/video/pyvideos/createobject')
 def CreateVideoClipObject(url, summary, title='asdfa', include_container=False):
     videoclip_obj = VideoClipObject(
 	    key = Callback(CreateVideoClipObject, url=url, title=title, summary=summary,include_container=True),
@@ -87,8 +87,8 @@ def CreateVideoClipObject(url, summary, title='asdfa', include_container=False):
     if include_container:
 	return ObjectContainer(objects=[videoclip_obj])
     else:
-	return videoclip_obj        
-    
+	return videoclip_obj
+
 ###############################################################
 
 def find_all_rss_links(content):
@@ -101,7 +101,7 @@ def find_all_rss_links(content):
     return rss_category_links
 ###############################################################
 
-def normalize(url):    
+def normalize(url):
     """Normalize url by stripping any query and fragment parts; also,
     if original url was of the form `www.foo.com', convert this to
     `http://www.foo.com'.
@@ -130,40 +130,32 @@ def get_page_video_urls(resp):
     video_urls=[]
     page_video_urls={}
     for each_entry in page['entries']:
-        #page_urls.append(each_entry['links'][0]['href'])
-        #print each_entry['links']
-        #get_video_url_for_each_entry()
         if len(each_entry['links'])>1:
             video_urls.append(each_entry['links'][1]['href'])
-            #video_urls.append(normalize(each_entry['links'][1]['href']))
         else:
-            video_urls.append(check_video_url_in_json())            
-        #page_video_urls[each_entry['links'][0]['href']]=video_urls[-1]
-    #return page_urls, video_urls, page_video_urls
+            video_urls.append(check_video_url_in_json())
     return video_urls
 ###############################################################
 def extract_videourl_for_each_category(rss_category_links):
     category_page_video_url={}
     for each_rss_path in rss_category_links:
-        resp=feedparser.parse('http://www.pyvideo.org'+each_rss_path)
-        #page_urls,video_urls,page_video_urls=get_page_video_urls(resp)
+        resp=RSS.FeedFromURL('http://www.pyvideo.org'+each_rss_path)
         video_urls=get_page_video_urls(resp)
         py_category=extract_category_from_rsslinks(each_rss_path)
         category_page_video_url[py_category]=[video_urls]
-    return category_page_video_url    
+    return category_page_video_url
 ###############################################################
 
 def my_main():
-    #global cateogry_page_video_url
-    req = urllib2.Request('http://www.pyvideo.org/category')
-    response = urllib2.urlopen(req)
-    the_page_content=response.read()
+    url='http://www.pyvideo.org/category'
+    the_page_content=HTTP.Request(url).content
+    Log(the_page_content)
     soup=BeautifulSoup(the_page_content)
     rss_category_links=find_all_rss_links(soup)
     category_page_video_url=extract_videourl_for_each_category(rss_category_links)
     return category_page_video_url
 
 
-    
+
 #if __name__=="__main__":
 #    main()
